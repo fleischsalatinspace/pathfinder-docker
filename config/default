@@ -9,6 +9,12 @@ server {
 
 	server_name domain.com;
 
+        # Directives for setting real_ip/XFF IP address in log files
+        #TODO: currently not in use, we need to build our own image
+        set_real_ip_from    172.0.0.0/8; #IP address range of docker network rfc1918
+        real_ip_header      X-Forwarded-For;
+	real_ip_recursive on;
+
 	location / {
 		index index.php;
 		try_files $uri $uri/ /index.php?$query_string;

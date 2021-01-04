@@ -1,4 +1,5 @@
 FROM ubuntu:16.04
+#TODO: upgrade to 20.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -33,6 +34,8 @@ RUN apt-get install -y \
 ARG VERSION 
 RUN mkdir /var/www/pathfinder
 RUN mkdir /var/log/cron-www/
+#TODO: lets use this fork with fixed pochven gates until exodus4d has fix in master
+#TODO: https://github.com/Clenda/pathfinder
 RUN git clone --branch $VERSION https://github.com/exodus4d/pathfinder.git /var/www/pathfinder
 COPY ./config/composer.json /root/.composer/config.json
 RUN chown -R www-data:www-data /var/www/pathfinder
