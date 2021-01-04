@@ -1,32 +1,60 @@
-version: '2.0'
+version: '2.4'
 
 services:
     db:
-        image: mysql:5.7
-        volumes:
-            - database:/var/lib/mysql
-            - ./config/start.sql:/docker-entrypoint-initdb.d/start.sql
-        restart: always
-        environment:
-          MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-          MYSQL_USER: "${MYSQL_USER}"
+      container_name: pathfinder_db_prod
+      extends:
+        file: docker-compose-base.yml
+        service: db
+      environment:
+        MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+        MYSQL_USER: "${MYSQL_USER}"
+      volumes:
+              ##TODO: mysql docker image logs to sdout, so where do we get logs?
+              - database-prod:/var/lib/mysql
 
     pathfinder:
-        image: kryptedgaming/pathfinder:latest
-        env_file: .env
-        #        ports:
-        #          - "127.0.0.1:8000:80"
+      container_name: pathfinder_app_prod
+      extends:
+        file: docker-compose-base.yml
+        service: pathfinder
+      env_file: .env.prod
+      depends_on:
+        - db
+      volumes:
+          - app-logs-prod:/var/www/pathfinder/logs/
+          - app-logs-nginx-prod:/var/log/nginx/
+            #TODO: dont want to mount complete /var/log, so lets disable it for now
+            #- app-logs-php-prod:/var/log/php7.2-fpm.log
+          - app-logs-redis-prod:/var/log/redis/
+          - app-logs-cron-prod:/var/log/cron-www/
 
     caddy:
-        image: caddy:2-alpine
-        ports: 
-          - "127.0.0.1:9000:443"
-        volumes:
-                - ./Caddyfile:/etc/caddy/Caddyfile
-                - caddy-data:/data
-                - caddy-config:/config
+      container_name: pathfinder_caddy_prod
+      extends:
+        file: docker-compose-base.yml
+        service: caddy
+      ports: 
+        - "443:443"
+        - "80:80"
+      #TODO: create caddy-alpine based image with entrypoint to replace vhost config in caddy configfile
+      #TODO: also log access-logs to sdout to replace the bind mount caddy-logs-prod
+      volumes:
+              - ./config/Caddyfile-prod:/etc/caddy/Caddyfile
+              - caddy-data-prod:/data
+              - caddy-config-prod:/config
+              - caddy-logs-prod:/var/log/
 
+
+
+#TODO: for whatever reason volumes declaration has to be included here, not in docker-compose-base.yml file
 volumes:
-    database: {}
-    caddy-data: {}
-    caddy-config: {}
+    database-prod: {}
+    caddy-data-prod: {}
+    caddy-config-prod: {}
+    app-logs-prod: {}
+    app-logs-nginx-prod: {}
+    #app-logs-php-prod: {}
+    app-logs-redis-prod: {}
+    app-logs-cron-prod: {}
+    caddy-logs-prod: {}
