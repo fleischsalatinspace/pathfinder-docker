@@ -1,0 +1,17 @@
+version: '2.4'
+#TODO: where do we need restart policy
+#TODO: cpu/mem limits
+
+services:
+    db:
+        image: mysql:5.7
+        volumes:
+            - ./config/start.sql:/docker-entrypoint-initdb.d/start.sql
+        restart: always
+
+    pathfinder:
+        image: kryptedgaming/pathfinder:latest
+
+
+    caddy:
+        image: caddy:2-alpine

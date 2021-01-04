@@ -1,0 +1,32 @@
+version: '2.0'
+
+services:
+    db:
+        image: mysql:5.7
+        volumes:
+            - database:/var/lib/mysql
+            - ./config/start.sql:/docker-entrypoint-initdb.d/start.sql
+        restart: always
+        environment:
+          MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+          MYSQL_USER: "${MYSQL_USER}"
+
+    pathfinder:
+        image: kryptedgaming/pathfinder:latest
+        env_file: .env
+        #        ports:
+        #          - "127.0.0.1:8000:80"
+
+    caddy:
+        image: caddy:2-alpine
+        ports: 
+          - "127.0.0.1:9000:443"
+        volumes:
+                - ./Caddyfile:/etc/caddy/Caddyfile
+                - caddy-data:/data
+                - caddy-config:/config
+
+volumes:
+    database: {}
+    caddy-data: {}
+    caddy-config: {}
