@@ -1,4 +1,4 @@
-.env
+.env.prod
 .env.dev
 config/Caddyfile-dev
 config/Caddyfile-prod
