@@ -30,15 +30,18 @@ Dockerfile for running [Pathfinder](https://github.com/exodus4d/pathfinder), the
 1. Clone this repo and change directory
 2. Copy the example `.env.sample` file to `.env.prod`
 3. Copy the example `config/Caddyfile.sample` file to `config/Caddyfile-prod`
-3. Edit `.env.prod` and `config/Caddyfile-prod` and check your config with `./production.sh config`
+4. Edit `.env.prod` and `config/Caddyfile-prod` and check your config with `./production.sh config`
 5. If satisfied, start up your instance with `./production.sh up -d` 
+6. If youre getting the pathfinder setup page with letsencrypt staging TLS-certificate , everything is working
+7. Stop the cluster with `./production.sh stop` and comment `acme_ca` in `config/Caddyfile-prod` to receive live letsencrypt TLS-certificate
+8. Start  cluster with `./production.sh up -d`
 
 # Installation development/local testing
 1. Clone this repo and change directory
 2. Copy the example `.env.sample` file to `.env.dev`
 3. Copy the example `config/Caddyfile.sample` file to `config/Caddyfile-dev`
-3. Edit `.env.dev` and `config/Caddyfile-dev` and check your config with `./development.sh config`
-4. Start up your instance with `./development.sh up -d`
+4. Edit `.env.dev` and `config/Caddyfile-dev` and check your config with `./development.sh config`
+5. Start your instance with `./development.sh up -d`
 
 # Setup
 1. Navigate to your Pathfinder page, go through setup.
@@ -52,8 +55,8 @@ Dockerfile for running [Pathfinder](https://github.com/exodus4d/pathfinder), the
 # Importing static database
 1. `wget https://github.com/exodus4d/pathfinder/raw/master/export/sql/eve_universe.sql.zip`
 2. `unzip eve_universe.sql.zip`
-3. `sudo docker cp eve_universe.sql "$(sudo docker-compose ps | grep db | awk '{ print $1}'):/eve_universe.sql"`
-4. `sudo docker-compose exec db sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" eve_universe < /eve_universe.sql'`
+3. `docker cp eve_universe.sql "$(./production.sh ps | grep db | awk '{ print $1}'):/eve_universe.sql"`
+4. `./production.sh exec db sh -c 'exec mysql -uroot -p eve_universe < /eve_universe.sql'`
 5. **Optional** `rm eve_universe.sql*`
 6. [Complete Setup.](#Setup)
 
@@ -63,7 +66,10 @@ Dockerfile for running [Pathfinder](https://github.com/exodus4d/pathfinder), the
 - - Creating SQL backups
 - - Restoring SQL backups 
 - - Viewing application/webserver logs from volumes
-- - Creating a support zip, containg application and webserver logs for further analyzing
+- - Creating a support zip, containing application and webserver logs for further analyzing
+
+# Updating pathfinder
+- TODO
 
 
 
