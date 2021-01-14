@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#stolen from https://serversforhackers.com/dockerized-app/compose-separated
 #TODO: backup function
 #TODO: backupdb: docker exec some-mysql sh -c 'exec mysqldump --all-databases -uroot -p"$MYSQL_ROOT_PASSWORD"' > /some/path/on/your/host/all-databases.sql
 #TODO: restoredb: docker exec -i some-mysql sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' < /some/path/on/your/host/all-databases.sql

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#stolen from https://serversforhackers.com/dockerized-app/compose-separated
 
 # Decide which docker-compose file to use
 COMPOSE_FILE="prod"
