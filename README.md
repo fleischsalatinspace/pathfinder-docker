@@ -55,10 +55,19 @@ Dockerfile for running [Pathfinder](https://github.com/exodus4d/pathfinder), the
 # Importing static database
 1. `wget https://github.com/exodus4d/pathfinder/raw/master/export/sql/eve_universe.sql.zip`
 2. `unzip eve_universe.sql.zip`
-3. `docker cp eve_universe.sql "$(./production.sh ps | grep db | awk '{ print $1}'):/eve_universe.sql"`
-4. `./production.sh exec db sh -c 'exec mysql -uroot -p eve_universe < /eve_universe.sql'`
-5. **Optional** `rm eve_universe.sql*`
-6. [Complete Setup.](#Setup)
+3. On Development/local testing
+```
+docker cp eve_universe.sql "$(./develop.sh ps | grep db_dev | awk '{ print $1}'):/eve_universe.sql"
+./develop.sh exec db sh -c 'exec mysql -uroot -p eve_universe < /eve_universe.sql'
+./develop.sh exec db sh -c 'exec rm eve_universe.sql*'
+```
+4. On Production
+```
+docker cp eve_universe.sql "$(./production.sh ps | grep db_prod | awk '{ print $1}'):/eve_universe.sql"
+./production.sh exec db sh -c 'exec mysql -uroot -p eve_universe < /eve_universe.sql'
+./production.sh exec db sh -c 'exec rm eve_universe.sql*'
+```
+5. [Complete Setup.](#Setup)
 
 # Administration
 - The wrapper scripts pass every argument to `docker-compose`, just with modified `docker-compose` file location and `.env` file location
