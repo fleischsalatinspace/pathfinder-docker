@@ -148,5 +148,11 @@ if [ $# -gt 0 ];then
     fi
 
 else
+    msg "No commands received. Displaying help and running docker containers"	
+    msg "${GREEN}COMMANDS${NOFORMAT}"
+    msg "	backup: creates a backup of the mysql database and container volumes"
+    msg "	restore: restores mysql database and container volumes from a provided backup"
+    msg "	support-zip: creates a file containing application and service logs"
+    msg ""
     ${COMPOSE} ps
 fi
