@@ -19,7 +19,7 @@ COMPOSE_FILE="dev"
 
 # check if we are root, if not use sudo
 SUDO=''
-if (( $EUID != 0 )); then
+if [ "${EUID}" != "0" ]; then
     SUDO='sudo'
 fi
 
@@ -32,21 +32,21 @@ if [ $# -gt 0 ];then
     if [ "$1" == "backup" ]; then
         #shift 1
 	BACKUP_LOCATION=${BACKUP_LOCATION}$(date +%F_%H-%M-%S)
-        $SUDO mkdir -p $BACKUP_LOCATION
-	$COMPOSE exec db sh -c 'exec mysqldump --all-databases -uroot -p${MYSQL_ROOT_PASSWORD}' > "${BACKUP_LOCATION}/backup_all-databases.sql"
-	$COMPOSE stop
+        mkdir -p "${BACKUP_LOCATION}"
+	${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" > "${BACKUP_LOCATION}/backup_all-databases.sql"
+	${COMPOSE} stop
 	# tar backup volumes
-	for i in $($COMPOSE config --volumes);
+	for i in $(${COMPOSE} config --volumes);
        	do 
 	  PWD_BASENAME=$(basename "$(pwd)")
-	  BACKUP_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_$i")
-	  $SUDO tar cvfz ${BACKUP_LOCATION}/$i.tar.gz ${BACKUP_TARGET}/
+	  BACKUP_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${i}")
+	  ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz "${BACKUP_TARGET}"/
         done
     # Else, pass-thru args to docker-compose
     else
-        $COMPOSE "$@"
+        ${COMPOSE} "$@"
     fi
 
 else
-    $COMPOSE ps
+    ${COMPOSE} ps
 fi
