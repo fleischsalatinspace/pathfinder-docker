@@ -50,7 +50,7 @@ backup() {
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} created backup location at ${BACKUP_LOCATION}"
         msg "Creating MySQL backup"
-	if ! ${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" > "${BACKUP_LOCATION}/backup_all-databases.sql" ; then
+	if ! ${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" | gzip > "${BACKUP_LOCATION}/backup_all-databases.sql.gz" ; then
         	msg "${RED}Failed${NOFORMAT} to create MySQL backup"  
 		exit 1
 	fi
@@ -80,7 +80,32 @@ restore() {
 }
 
 support-zip() {
- msg "Not implemented."
+	BACKUP_LOCATION=${BACKUP_LOCATION}$(date +%F_%H-%M-%S)_support-zip
+        msg "Creating support-zip location at ${BACKUP_LOCATION}"
+        if ! mkdir -p "${BACKUP_LOCATION}" ; then
+        	msg "${RED}Failed${NOFORMAT} to create support-zip location at ${BACKUP_LOCATION}"  
+		exit 1
+	fi
+	msg "${GREEN}Successfully${NOFORMAT} created support-zip location at ${BACKUP_LOCATION}"
+	# export docker mysql db container logs 
+        msg "Creating database container logs export"
+	if ! ${COMPOSE} logs --no-color -t db | gzip >> "${BACKUP_LOCATION}"/database.log.gz ; then
+               msg "${RED}Failed${NOFORMAT} to create database container log export"  
+               exit 1
+        fi
+        msg "${GREEN}Successfully${NOFORMAT} created database container log export"	
+	# tar backup logs volumes
+	for i in $(${COMPOSE} config --volumes | grep logs);
+       	do 
+	  PWD_BASENAME=$(basename "$(pwd)")
+	  BACKUP_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${i}")
+          msg "Creating docker container volume backup of ${i}"
+	  if ! ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz "${BACKUP_TARGET}"/ >/dev/null 2>&1 ; then
+        	msg "${RED}Failed${NOFORMAT} to create backup of container volume ${i}"  
+		exit 1
+	  fi
+	  msg "${GREEN}Successfully${NOFORMAT} created backup of ${i} volume"
+        done
 }
 
 # If we pass any arguments...
@@ -88,7 +113,7 @@ if [ $# -gt 0 ];then
     # "backup" 
     if [ "$1" == "backup" ]; then
         #shift 1
-	echo -e "This will first backup your MySQL database and then backup every container volume. In this process your pathfinder will be stopped.\nDo you want to continue?"
+	echo -e "This will backup your MySQL database and then backup every container volume. In this process your pathfinder will be stopped.\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
                 Yes ) backup; break;;
@@ -108,7 +133,7 @@ if [ $# -gt 0 ];then
         done
     elif [ "$1" == "support-zip" ]; then
         #shift 1
-	echo -e "This will create a support-zip containing application logs for further analyzing. No user data or API keys are included. In this process your pathfinder will be stopped.\nDo you want to continue?"
+	echo -e "This will create a support-zip containing application logs for further analyzing. No user data or API keys are included.\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
                 Yes ) support-zip; break;;
