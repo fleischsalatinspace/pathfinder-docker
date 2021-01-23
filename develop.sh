@@ -94,6 +94,12 @@ support-zip() {
                exit 1
         fi
         msg "${GREEN}Successfully${NOFORMAT} created database container log export"	
+        msg "Stopping docker containers"
+	if ! ${COMPOSE} stop >/dev/null 2>&1 ; then
+        	msg "${RED}Failed${NOFORMAT} to stop docker containers"  
+		exit 1
+	fi
+	msg "${GREEN}Successfully${NOFORMAT} stopped docker containers"
 	# tar backup logs volumes
 	for i in $(${COMPOSE} config --volumes | grep logs);
        	do 
@@ -113,7 +119,7 @@ if [ $# -gt 0 ];then
     # "backup" 
     if [ "$1" == "backup" ]; then
         #shift 1
-	echo -e "This will backup your MySQL database and then backup every container volume. In this process your pathfinder will be stopped.\nDo you want to continue?"
+	echo -e "This will backup your MySQL database and then backup every container volume. In this process your pathfinder will be ${RED}stopped${NOFORMAT}.\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
                 Yes ) backup; break;;
@@ -123,7 +129,7 @@ if [ $# -gt 0 ];then
         done
     elif [ "$1" == "restore" ]; then
         #shift 1
-	echo -e "This will restore a backup of your MySQL database and then restore every container volume. In this process your pathfinder will be stopped and all current data in the volumes will be lost.\nDo you want to continue?"
+	echo -e "This will restore a backup of your MySQL database and then restore every container volume. In this process your pathfinder will be ${RED}stopped${NOFORMAT} and all current data in the volumes will be lost.\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
                 Yes ) restore; break;;
@@ -133,7 +139,7 @@ if [ $# -gt 0 ];then
         done
     elif [ "$1" == "support-zip" ]; then
         #shift 1
-	echo -e "This will create a support-zip containing application logs for further analyzing. No user data or API keys are included.\nDo you want to continue?"
+	echo -e "This will create a support-zip containing application logs for further analyzing. No user data or API keys are included. In this process your pathfinder will be ${RED}stopped${NOFORMAT}.\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
                 Yes ) support-zip; break;;
