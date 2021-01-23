@@ -76,11 +76,38 @@ backup() {
 }
 
 restore() {
- msg "Not implemented."
+	if [ -z "${@}" ]; then
+        	msg "${RED}Failed${NOFORMAT} to validate input. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+		exit 1
+	fi
+	verify_backup "$@"
+	msg "Restore not implemented."
 }
 
 verify_backup() {
- msg "Not implemented."
+	ARCHIVE_PATH="${1}"
+	msg "Verifying backup directory"
+	if ! [ -d "${ARCHIVE_PATH}" ]; then
+		msg "${RED}Failed${NOFORMAT} to verify backup directory. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"
+		exit 1
+	fi
+	msg "${GREEN}Successfully${NOFORMAT} verfified backup directory"
+	for i in $(${COMPOSE} config --volumes);
+       	do 
+          msg "Verifying backup file of ${i}"
+	  if ! ${SUDO} tar tzfv "${ARCHIVE_PATH}"/"${i}".tar.gz >/dev/null 2>&1 ; then
+        	msg "${RED}Failed${NOFORMAT} to verify backup file of ${i}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+		exit 1
+	  fi
+	  msg "${GREEN}Successfully${NOFORMAT} verfified backup file of ${i}"
+        done
+        msg "Verifying database backup file"
+	if ! ${SUDO} gzip -t -v "${ARCHIVE_PATH}"/backup_all-databases.sql.gz >/dev/null 2>&1 ; then
+              msg "${RED}Failed${NOFORMAT} to verify backup file of ${i}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+	      exit 1
+	fi
+	msg "${GREEN}Successfully${NOFORMAT} verfified database backup file"
+	
 }
 
 support-zip() {
@@ -132,11 +159,11 @@ if [ $# -gt 0 ];then
             esac
         done
     elif [ "$1" == "restore" ]; then
-        #shift 1
+        shift 1
 	echo -e "This will restore a backup of your MySQL database and then restore every container volume. In this process your pathfinder will be ${RED}stopped${NOFORMAT} and all current data in the volumes will be lost.\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
-                Yes ) restore; break;;
+                Yes ) restore "$@"; break;;
                 No ) exit;;
 		* ) exit;;
             esac
