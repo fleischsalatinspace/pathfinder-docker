@@ -76,7 +76,7 @@ backup() {
 }
 
 restore() {
-	if [ -z "${@}" ]; then
+	if [ -z "${*}" ]; then
         	msg "${RED}ERROR${NOFORMAT} No valid input detected. ${YELLOW}Execute bash -x \$yourscriptfilename.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
