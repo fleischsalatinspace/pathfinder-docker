@@ -91,7 +91,7 @@ verify_backup() {
 		msg "${RED}ERROR${NOFORMAT} Failed to verify backup directory. ${YELLOW}Execute bash -x \$yourscriptfilename.sh for debugging.${NOFORMAT}"
 		exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} verfified backup directory"
+	msg "${GREEN}Successfully${NOFORMAT} verified backup directory"
 	for i in $(${COMPOSE} config --volumes);
        	do 
           msg "Verifying backup file of ${i}"
@@ -99,14 +99,14 @@ verify_backup() {
         	msg "${RED}ERROR${NOFORMAT} Failed to verify backup file of ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
-	  msg "${GREEN}Successfully${NOFORMAT} verfified backup file of ${i}"
+	  msg "${GREEN}Successfully${NOFORMAT} verified backup file of ${i}"
         done
         msg "Verifying database backup file"
 	if ! ${SUDO} gzip -t -v "${ARCHIVE_PATH}"/backup_all-databases.sql.gz >/dev/null 2>&1 ; then
               msg "${RED}ERROR${NOFORMAT} Failed to verify backup file of ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 	      exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} verfified database backup file"
+	msg "${GREEN}Successfully${NOFORMAT} verified database backup file"
 	
 }
 
