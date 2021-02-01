@@ -45,19 +45,19 @@ backup() {
 	BACKUP_LOCATION=${BACKUP_LOCATION}$(date +%F_%H-%M-%S)
         msg "Creating backup location at ${BACKUP_LOCATION}"
         if ! mkdir -p "${BACKUP_LOCATION}" ; then
-        	msg "${RED}Failed${NOFORMAT} to create backup location at ${BACKUP_LOCATION}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to create backup location at ${BACKUP_LOCATION}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} created backup location at ${BACKUP_LOCATION}"
         msg "Creating MySQL backup"
 	if ! ${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" | gzip > "${BACKUP_LOCATION}/backup_all-databases.sql.gz" ; then
-        	msg "${RED}Failed${NOFORMAT} to create MySQL backup. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to create MySQL backup. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} created MySQL backup"
         msg "Stopping docker containers"
 	if ! ${COMPOSE} stop >/dev/null 2>&1 ; then
-        	msg "${RED}Failed${NOFORMAT} to stop docker containers. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to stop docker containers. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} stopped docker containers"
@@ -68,7 +68,7 @@ backup() {
 	  BACKUP_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${i}")
           msg "Creating docker container volume backup of ${i}"
 	  if ! ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz "${BACKUP_TARGET}"/ >/dev/null 2>&1 ; then
-        	msg "${RED}Failed${NOFORMAT} to create backup of container volume ${i}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to create backup of container volume ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
 	  msg "${GREEN}Successfully${NOFORMAT} created backup of ${i} volume"
@@ -77,7 +77,7 @@ backup() {
 
 restore() {
 	if [ -z "${@}" ]; then
-        	msg "${RED}Failed${NOFORMAT} to validate input. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} No valid input detected. ${YELLOW}Execute bash -x \$yourscriptfilename.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	verify_backup "$@"
@@ -88,7 +88,7 @@ verify_backup() {
 	ARCHIVE_PATH="${1}"
 	msg "Verifying backup directory"
 	if ! [ -d "${ARCHIVE_PATH}" ]; then
-		msg "${RED}Failed${NOFORMAT} to verify backup directory. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"
+		msg "${RED}ERROR${NOFORMAT} Failed to verify backup directory. ${YELLOW}Execute bash -x \$yourscriptfilename.sh for debugging.${NOFORMAT}"
 		exit 1
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} verfified backup directory"
@@ -96,14 +96,14 @@ verify_backup() {
        	do 
           msg "Verifying backup file of ${i}"
 	  if ! ${SUDO} tar tzfv "${ARCHIVE_PATH}"/"${i}".tar.gz >/dev/null 2>&1 ; then
-        	msg "${RED}Failed${NOFORMAT} to verify backup file of ${i}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to verify backup file of ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
 	  msg "${GREEN}Successfully${NOFORMAT} verfified backup file of ${i}"
         done
         msg "Verifying database backup file"
 	if ! ${SUDO} gzip -t -v "${ARCHIVE_PATH}"/backup_all-databases.sql.gz >/dev/null 2>&1 ; then
-              msg "${RED}Failed${NOFORMAT} to verify backup file of ${i}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+              msg "${RED}ERROR${NOFORMAT} Failed to verify backup file of ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 	      exit 1
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} verfified database backup file"
@@ -114,20 +114,20 @@ support-zip() {
 	BACKUP_LOCATION=${BACKUP_LOCATION}$(date +%F_%H-%M-%S)_support-zip
         msg "Creating support-zip location at ${BACKUP_LOCATION}"
         if ! mkdir -p "${BACKUP_LOCATION}" ; then
-        	msg "${RED}Failed${NOFORMAT} to create support-zip location at ${BACKUP_LOCATION}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to create support-zip location at ${BACKUP_LOCATION}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} created support-zip location at ${BACKUP_LOCATION}"
 	# export docker mysql db container logs 
         msg "Creating database container logs export"
 	if ! ${COMPOSE} logs --no-color -t db | gzip >> "${BACKUP_LOCATION}"/database.log.gz ; then
-               msg "${RED}Failed${NOFORMAT} to create database container log export. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+               msg "${RED}ERROR${NOFORMAT} Failed to create database container log export. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
                exit 1
         fi
         msg "${GREEN}Successfully${NOFORMAT} created database container log export"	
         msg "Stopping docker containers"
 	if ! ${COMPOSE} stop >/dev/null 2>&1 ; then
-        	msg "${RED}Failed${NOFORMAT} to stop docker containers. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to stop docker containers. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	msg "${GREEN}Successfully${NOFORMAT} stopped docker containers"
@@ -138,7 +138,7 @@ support-zip() {
 	  BACKUP_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${i}")
           msg "Creating docker container volume backup of ${i}"
 	  if ! ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz "${BACKUP_TARGET}"/ >/dev/null 2>&1 ; then
-        	msg "${RED}Failed${NOFORMAT} to create backup of container volume ${i}. ${YELLOW}Execute bash -x scriptfile.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} Failed to create backup of container volume ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
 	  msg "${GREEN}Successfully${NOFORMAT} created backup of ${i} volume"
