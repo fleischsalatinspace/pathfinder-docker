@@ -8,7 +8,10 @@
 #TODO: check if compose files are available
 #TODO: eve-universe sql import function
 
+# https://mywiki.wooledge.org/glob
+# https://sipb.mit.edu/doc/safe-shell/
 set -Eeuo pipefail
+shopt -s failglob
 
 # backup location
 #BACKUP_LOCATION="/var/backups/"
@@ -35,7 +38,7 @@ setup_colors
 
 # message function
 msg() {
-  echo >&2 -e "${1-}"
+	echo >&2 -e "$(date +%H:%M:%S%z) ${1-}"
 }
 
 # Create docker-compose command to run
@@ -48,19 +51,19 @@ backup() {
         	msg "${RED}ERROR${NOFORMAT} Failed to create backup location at ${BACKUP_LOCATION}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} created backup location at ${BACKUP_LOCATION}"
+	msg "${GREEN}OK${NOFORMAT} Successfully created backup location at ${BACKUP_LOCATION}"
         msg "Creating MySQL backup"
 	if ! ${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" | gzip > "${BACKUP_LOCATION}/backup_all-databases.sql.gz" ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to create MySQL backup. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} created MySQL backup"
+	msg "${GREEN}OK${NOFORMAT} Successfully created MySQL backup"
         msg "Stopping docker containers"
 	if ! ${COMPOSE} stop >/dev/null 2>&1 ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to stop docker containers. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} stopped docker containers"
+	msg "${GREEN}OK${NOFORMAT} Successfully stopped docker containers"
 	# tar backup volumes
 	for i in $(${COMPOSE} config --volumes);
        	do 
@@ -71,7 +74,7 @@ backup() {
         	msg "${RED}ERROR${NOFORMAT} Failed to create backup of container volume ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
-	  msg "${GREEN}Successfully${NOFORMAT} created backup of ${i} volume"
+	  msg "${GREEN}OK${NOFORMAT} Successfully created backup of ${i} volume"
         done
 }
 
@@ -81,7 +84,49 @@ restore() {
 		exit 1
 	fi
 	verify_backup "$@"
-	msg "Restore not implemented."
+        msg "Stopping docker containers"
+	if ! ${COMPOSE} stop >/dev/null 2>&1 ; then
+        	msg "${RED}ERROR${NOFORMAT} Failed to stop docker containers. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
+		exit 1
+	fi
+	msg "${GREEN}OK${NOFORMAT} Successfully stopped docker containers"
+	# restore backup volumes excluding database volume
+        for volumename in $(${COMPOSE} config --volumes | grep -v database);
+        do
+          PWD_BASENAME=$(basename "$(pwd)")
+          RESTORE_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${volumename}")
+          msg "${YELLOW}WARN${NOFORMAT} Removing old docker volume data of ${volumename}"
+	  # check if RESTORE_TARGET is a directory
+	  if ! ${SUDO} [ -d "${RESTORE_TARGET}" ]; then
+                  msg "${RED}ERROR${NOFORMAT} Invalid docker container volume path. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"
+		  exit 1
+          fi
+	  # iterate over restore targets and remove content of directory after user confirmation
+	  # we have to implement optional sudo, so shellglob style is not possible
+	  # https://mywiki.wooledge.org/BashPitfalls#for_f_in_.24.28ls_.2A.mp3.29
+	  # https://mywiki.wooledge.org/UsingFind#Actions_in_bulk:_xargs.2C_-print0_and_-exec_.2B-
+	  # if find return empty string, just skip removal
+	  if [ -n "$(${SUDO} find "${RESTORE_TARGET}" -maxdepth 1 -mindepth 1 -print)" ] ; then
+		# find did return non-empty string, so lets iterate over it
+	  	for data in $(${SUDO} find "${RESTORE_TARGET}" -maxdepth 1 -mindepth 1 -print);
+          	do 
+	  	      # make sure return data from find is non-zero
+	  	      if [ -n "${data}" ] || [ "${data}" != "" ]; then
+			        # remove data
+          			if ! ${SUDO} rm -vr "${data}" ; then
+          			      msg "${RED}ERROR${NOFORMAT} Failed to remove container volume data ${data}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"
+          			      exit 1
+          			fi
+          			msg "${GREEN}OK${NOFORMAT} Successfully removed container volume data of ${volumename}"
+	  	      fi
+          	done
+	  else
+		msg "${GREEN}OK${NOFORMAT} Container volume data seems empty. Skipping data removal."
+	  fi
+        done
+        echo "restore from .tar not implemented"
+        echo "restore from sqldump not implemented"
+      
 }
 
 verify_backup() {
@@ -91,7 +136,7 @@ verify_backup() {
 		msg "${RED}ERROR${NOFORMAT} Failed to verify backup directory. ${YELLOW}Execute bash -x \$yourscriptfilename.sh for debugging.${NOFORMAT}"
 		exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} verified backup directory"
+	msg "${GREEN}OK${NOFORMAT} Successfully verified backup directory"
 	for i in $(${COMPOSE} config --volumes);
        	do 
           msg "Verifying backup file of ${i}"
@@ -99,14 +144,14 @@ verify_backup() {
         	msg "${RED}ERROR${NOFORMAT} Failed to verify backup file of ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
-	  msg "${GREEN}Successfully${NOFORMAT} verified backup file of ${i}"
+	  msg "${GREEN}OK${NOFORMAT} Successfully verified backup file of ${i}"
         done
         msg "Verifying database backup file"
 	if ! ${SUDO} gzip -t -v "${ARCHIVE_PATH}"/backup_all-databases.sql.gz >/dev/null 2>&1 ; then
               msg "${RED}ERROR${NOFORMAT} Failed to verify backup file of ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 	      exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} verified database backup file"
+	msg "${GREEN}OK${NOFORMAT} Successfully verified database backup file"
 	
 }
 
@@ -117,20 +162,20 @@ support-zip() {
         	msg "${RED}ERROR${NOFORMAT} Failed to create support-zip location at ${BACKUP_LOCATION}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} created support-zip location at ${BACKUP_LOCATION}"
+	msg "${GREEN}OK${NOFORMAT} Successfully created support-zip location at ${BACKUP_LOCATION}"
 	# export docker mysql db container logs 
         msg "Creating database container logs export"
 	if ! ${COMPOSE} logs --no-color -t db | gzip >> "${BACKUP_LOCATION}"/database.log.gz ; then
                msg "${RED}ERROR${NOFORMAT} Failed to create database container log export. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
                exit 1
         fi
-        msg "${GREEN}Successfully${NOFORMAT} created database container log export"	
+        msg "${GREEN}OK${NOFORMAT} Successfully created database container log export"	
         msg "Stopping docker containers"
 	if ! ${COMPOSE} stop >/dev/null 2>&1 ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to stop docker containers. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
-	msg "${GREEN}Successfully${NOFORMAT} stopped docker containers"
+	msg "${GREEN}OK${NOFORMAT} Successfully stopped docker containers"
 	# tar backup logs volumes
 	for i in $(${COMPOSE} config --volumes | grep logs);
        	do 
@@ -141,7 +186,7 @@ support-zip() {
         	msg "${RED}ERROR${NOFORMAT} Failed to create backup of container volume ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
-	  msg "${GREEN}Successfully${NOFORMAT} created backup of ${i} volume"
+	  msg "${GREEN}OK${NOFORMAT} Successfully created backup of ${i} volume"
         done
 }
 
@@ -160,7 +205,7 @@ if [ $# -gt 0 ];then
         done
     elif [ "$1" == "restore" ]; then
         shift 1
-	echo -e "This will restore a backup of your MySQL database and then restore every container volume. In this process your pathfinder will be ${RED}stopped${NOFORMAT} and all current data in the volumes will be lost.\nDo you want to continue?"
+	echo -e "This will restore a backup of your MySQL database and then restore every container volume. In this process ${RED}your pathfinder will be stopped${NOFORMAT} and ${RED}all current data in the volumes will be lost.${NOFORMAT}\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
                 Yes ) restore "$@"; break;;
@@ -170,7 +215,7 @@ if [ $# -gt 0 ];then
         done
     elif [ "$1" == "support-zip" ]; then
         #shift 1
-	echo -e "This will create a support-zip containing application logs for further analyzing. No user data or API keys are included. In this process your pathfinder will be ${RED}stopped${NOFORMAT}.\nDo you want to continue?"
+	echo -e "This will create a support-zip containing application logs for further analyzing. No user data or API keys are included. In this process ${RED}your pathfinder will be stopped${NOFORMAT}.\nDo you want to continue?"
         select yn in "Yes" "No"; do
             case ${yn} in
                 Yes ) support-zip; break;;
