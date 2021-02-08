@@ -239,6 +239,7 @@ else
     msg "   stop: stop running docker containers"
     msg "   down: stop and remove docker containers"
     msg "   down -v: remove docker containers and volumes including application data. ${RED}Use with care${NOFORMAT}"
+    msg "   logs -f: display logs for running containers"
     msg "   --help: display docker-compose help\n"
     ${COMPOSE} ps
 fi
