@@ -230,11 +230,15 @@ if [ $# -gt 0 ];then
     fi
 
 else
-    msg "No commands received. Displaying help and running docker containers"
-    msg "${GREEN}COMMANDS${NOFORMAT}"
-    msg "	backup: creates a backup of the mysql database and container volumes"
-    msg "	restore: restores mysql database and container volumes from a provided backup"
-    msg "	support-zip: creates a file containing application and service logs"
-    msg ""
+    msg "${RED}ERROR${NOFORMAT} No commands received. Displaying script help and status of docker containers"
+    msg "COMMANDS"
+    msg "   backup: creates a backup of the mysql database and container volumes"
+    msg "   restore: restores mysql database and container volumes from a provided backup"
+    msg "   support-zip: creates a file containing application and service logs"
+    msg "   up -d: start docker containers"
+    msg "   stop: stop running docker containers"
+    msg "   down: stop and remove docker containers"
+    msg "   down -v: remove docker containers and volumes including application data. ${RED}Use with care${NOFORMAT}"
+    msg "   --help: display docker-compose help\n"
     ${COMPOSE} ps
 fi
