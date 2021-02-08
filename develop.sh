@@ -52,6 +52,13 @@ backup() {
 		exit 1
 	fi
 	msg "${GREEN}OK${NOFORMAT} Successfully created backup location at ${BACKUP_LOCATION}"
+	msg "Checking if docker containers are running"
+	# dirty check if containers are not running
+	if [[ $(${COMPOSE} ps | grep -c "Exit" ) -ne 0 ]] ; then
+		msg "${RED}ERROR${NOFORMAT} Please start up docker containers before creating a backup"
+		exit 1
+	fi
+	msg "${GREEN}OK${NOFORMAT} docker containers are running"
         msg "Creating MySQL backup"
 	if ! ${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" | gzip > "${BACKUP_LOCATION}/backup_all-databases.sql.gz" ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to create MySQL backup. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
@@ -240,6 +247,7 @@ else
     msg "   down: stop and remove docker containers"
     msg "   down -v: remove docker containers and volumes including application data. ${RED}Use with care${NOFORMAT}"
     msg "   logs -f: display logs for running containers"
+    msg "   ps: display status of docker containers"
     msg "   --help: display docker-compose help\n"
     ${COMPOSE} ps
 fi
