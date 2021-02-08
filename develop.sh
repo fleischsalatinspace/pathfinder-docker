@@ -77,7 +77,7 @@ backup() {
 	  PWD_BASENAME=$(basename "$(pwd)")
 	  BACKUP_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${i}")
           msg "Creating docker container volume backup of ${i}"
-	  if ! ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz "${BACKUP_TARGET}"/ >/dev/null 2>&1 ; then
+	  if ! ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz -C "${BACKUP_TARGET}"/ . >/dev/null 2>&1 ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to create backup of container volume ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
@@ -87,17 +87,18 @@ backup() {
 
 restore() {
 	if [ -z "${*}" ]; then
-        	msg "${RED}ERROR${NOFORMAT} No valid input detected. ${YELLOW}Execute bash -x \$yourscriptfilename.sh for debugging.${NOFORMAT}"  
+        	msg "${RED}ERROR${NOFORMAT} No valid input detected. Please provide full path to a backup location. ${YELLOW}Execute bash -x \$yourscriptfilename.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	verify_backup "$@"
+	RESTORE_TAR_PATH="${*}"
         msg "Stopping docker containers"
 	if ! ${COMPOSE} stop >/dev/null 2>&1 ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to stop docker containers. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
 	msg "${GREEN}OK${NOFORMAT} Successfully stopped docker containers"
-	# restore backup volumes excluding database volume
+	# verifying container volume path and clearing contents
         for volumename in $(${COMPOSE} config --volumes | grep -v database);
         do
           PWD_BASENAME=$(basename "$(pwd)")
@@ -131,7 +132,19 @@ restore() {
 		msg "${GREEN}OK${NOFORMAT} Container volume data seems empty. Skipping data removal."
 	  fi
         done
-        echo "restore from .tar not implemented"
+	# TODO: check if container volumes exist, if not fail and advise to up -d first
+	# restore backup volumes excluding database volume
+	for i in $(${COMPOSE} config --volumes | grep -v database);
+       	do 
+	  PWD_BASENAME=$(basename "$(pwd)")
+	  RESTORE_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${i}")
+          msg "Restoring docker container volume backup of ${i}"
+	  if ! ${SUDO} tar -C "${RESTORE_TARGET}"/ -vz -xf "${RESTORE_TAR_PATH}"/"${i}".tar.gz >/dev/null 2>&1 ; then
+        	msg "${RED}ERROR${NOFORMAT} Failed to restore backup of container volume ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
+		exit 1
+	  fi
+	  msg "${GREEN}OK${NOFORMAT} Successfully restored backup of ${i} volume"
+        done
         echo "restore from sqldump not implemented"
       
 }
@@ -189,7 +202,7 @@ support-zip() {
 	  PWD_BASENAME=$(basename "$(pwd)")
 	  BACKUP_TARGET=$(docker volume inspect --format '{{ .Mountpoint }}' "${PWD_BASENAME}_${i}")
           msg "Creating docker container volume backup of ${i}"
-	  if ! ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz "${BACKUP_TARGET}"/ >/dev/null 2>&1 ; then
+	  if ! ${SUDO} tar cvfz "${BACKUP_LOCATION}"/"${i}".tar.gz -C "${BACKUP_TARGET}"/ . >/dev/null 2>&1 ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to create backup of container volume ${i}. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	  fi
