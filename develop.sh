@@ -60,7 +60,7 @@ backup() {
 	fi
 	msg "${GREEN}OK${NOFORMAT} docker containers are running"
         msg "Creating MySQL backup"
-	if ! ${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" | gzip > "${BACKUP_LOCATION}/backup_all-databases.sql.gz" ; then
+	if ! ${COMPOSE} exec db sh -c "exec mysqldump --all-databases -uroot -p\${MYSQL_ROOT_PASSWORD}" | sed -u "s/mysqldump\:\ \[Warning\]\ Using\ a\ password\ on\ the\ command\ line\ interface\ can\ be\ insecure\.//g" | gzip > "${BACKUP_LOCATION}/backup_all-databases.sql.gz" ; then
         	msg "${RED}ERROR${NOFORMAT} Failed to create MySQL backup. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
 		exit 1
 	fi
@@ -145,7 +145,24 @@ restore() {
 	  fi
 	  msg "${GREEN}OK${NOFORMAT} Successfully restored backup of ${i} volume"
         done
-        echo "restore from sqldump not implemented"
+        msg "Starting MySQL docker container"
+	if ! ${COMPOSE} up -d db >/dev/null 2>&1 ; then
+        	msg "${RED}ERROR${NOFORMAT} Failed to start MySQL docker container. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
+		exit 1
+	fi
+	msg "${GREEN}OK${NOFORMAT} Successfully started MySQL docker containers"
+        msg "Restoring MySQL backup"
+	if ! gunzip < "${RESTORE_TAR_PATH}"/backup_all-databases.sql.gz | ${COMPOSE} exec -T db sh -c "exec mysql -uroot -p\${MYSQL_ROOT_PASSWORD}" ; then
+        	msg "${RED}ERROR${NOFORMAT} Failed to restore MySQL backup. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
+		exit 1
+	fi
+	msg "${GREEN}OK${NOFORMAT} Successfully restored MySQL backup"
+        msg "Starting docker containers"
+	if ! ${COMPOSE} up -d >/dev/null 2>&1 ; then
+        	msg "${RED}ERROR${NOFORMAT} Failed to start docker containers. ${YELLOW}Execute bash -x \$yourscriptfile.sh for debugging.${NOFORMAT}"  
+		exit 1
+	fi
+	msg "${GREEN}OK${NOFORMAT} Successfully started docker containers"
       
 }
 
