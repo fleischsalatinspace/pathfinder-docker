@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 #stolen from https://serversforhackers.com/dockerized-app/compose-separated
-#TODO: restore function
-#TODO: restoredb: docker exec -i some-mysql sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' < /some/path/on/your/host/all-databases.sql
-#TODO: doc: https://hub.docker.com/_/mysql
-#TODO: log function to view logs
 #TODO: check if we are in correct directory
 #TODO: check if compose files are available
 #TODO: eve-universe sql import function
