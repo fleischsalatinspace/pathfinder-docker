@@ -3,7 +3,7 @@ Forked from https://github.com/KryptedGaming/pathfinder-docker
 # Table of contents
 1. [Description](##Description)
 2. [Requirements](##Requirements)
-3. [docker-compose modes](##docker-compose modes)
+3. [docker-compose modes](##docker-compose-modes)
     1. [Production](###Production)
     2. [Development](###Development)
 4. [Administration](##Administration)
