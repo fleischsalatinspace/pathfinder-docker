@@ -12,7 +12,7 @@ Forked from https://github.com/KryptedGaming/pathfinder-docker
     2. [Development](#Development)
 
 ## Description
-This repository contains files for running [Pathfinder](https://github.com/exodus4d/pathfinder) within a docker-compose managed multi-container setup. To enable non-tech savy people to use this repository, there are [administration scripts](#Administration) for tasks like starting, stopping and backups included. Two docker-compose modes are available: production and develop. Check [below](#docker-compose-setupmodes) for further information
+This repository contains files for running [Pathfinder](https://github.com/exodus4d/pathfinder) within a docker-compose managed multi-container setup. To enable non-tech savy people to use this repository, there are [administration scripts](#Administration) for tasks like starting, stopping and backups included. Two docker-compose modes are available: production and develop. Check [below](#docker-compose-modes) for further information
 
 ## Requirements
 - Ubuntu 18.04 or 20.04
