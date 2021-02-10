@@ -22,7 +22,7 @@ Dockerfile for running [Pathfinder](https://github.com/exodus4d/pathfinder), the
 ## Wrapper scripts
 - To enable non-IT people to use this repository, there are two docker-compose wrapper scripts included:
 - - `production.sh` is a wrapper for `docker-compose -f docker-compose-prod.yml --env=.env.prod`
-- - `development.sh` is a wrapper for `docker-compose -f docker-compose-dev.yml --env=.env.dev`
+- - `develop.sh` is a wrapper for `docker-compose -f docker-compose-dev.yml --env=.env.dev`
 -  Additional functions (WIP) are creating/restoring sql backups, viewing logfiles, creating a support zip, etc...
 -  Further information available below [Administration.](#Administration)
 
@@ -40,8 +40,8 @@ Dockerfile for running [Pathfinder](https://github.com/exodus4d/pathfinder), the
 1. Clone this repo and change directory
 2. Copy the example `.env.sample` file to `.env.dev`
 3. Copy the example `config/Caddyfile.sample` file to `config/Caddyfile-dev`
-4. Edit `.env.dev` and `config/Caddyfile-dev` and check your config with `./development.sh config`
-5. Start your instance with `./development.sh up -d`
+4. Edit `.env.dev` and `config/Caddyfile-dev` and check your config with `./develop.sh config`
+5. Start your instance with `./develop.sh up -d`
 
 # Setup
 1. Navigate to your Pathfinder page, go through setup.
@@ -70,12 +70,13 @@ docker cp eve_universe.sql "$(./production.sh ps | grep db_prod | awk '{ print $
 5. [Complete Setup.](#Setup)
 
 # Administration
-- The wrapper scripts pass every argument to `docker-compose`, just with modified `docker-compose` file location and `.env` file location
-- Additional planned functions are 
-- - Creating SQL backups
-- - Restoring SQL backups 
-- - Viewing application/webserver logs from volumes
+- The wrapper scripts pass every argument to `docker-compose`, just with modified `docker-compose` file location and `.env` file location. Run the script without arguments to display help and available commands
+- Additional functions are 
+- - Creating volume + SQL backups
+- - Restoring volume + SQL backups 
 - - Creating a support zip, containing application and webserver logs for further analyzing
+-  Planned functions are
+- - Viewing application/webserver logs from volumes instead of docker-compose logs -f
 
 # Updating pathfinder
 - TODO
