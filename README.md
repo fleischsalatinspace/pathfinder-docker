@@ -1,3 +1,9 @@
+# pathfinder-docker
+
+[![Shellcheck](https://github.com/fleischsalatinspace/pathfinder-docker/workflows/shellcheck/badge.svg)](https://github.com/fleischsalatinspace/pathfinder-docker/actions)
+
+Easy to use docker-compose managed multi-container setup for running pathfinder
+
 Forked from https://github.com/KryptedGaming/pathfinder-docker
 
 # Table of contents
