@@ -10,12 +10,11 @@ repos:
     -   id: detect-private-key
     -   id: forbid-new-submodules
     -   id: mixed-line-ending
-    -   id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
 -   repo: https://github.com/IamTheFij/docker-pre-commit
     rev: v2.0.0
     hooks:
     -   id: docker-compose-check
+        files: docker-compose-*.yml
 -   repo: https://github.com/hadolint/hadolint
     rev: v1.22.1
     hooks:
