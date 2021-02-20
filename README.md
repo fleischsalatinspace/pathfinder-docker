@@ -74,7 +74,7 @@ This repository contains files for running [Pathfinder](https://github.com/exodu
 3. Copy the example `config/Caddyfile.sample` file to `config/Caddyfile-dev`
 4. Edit `.env.dev` and `config/Caddyfile-dev` and check your config with `./develop.sh config`
 5. Start your instance with `./develop.sh up -d`
-6. Access your instance on `https://pathfinder.lan:9000`
+6. Access your instance on `https://pathfinder.lan`
 
 # Setup Pathfinder
 1. Navigate to your Pathfinder page, go through setup.
