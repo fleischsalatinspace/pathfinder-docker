@@ -86,7 +86,7 @@ This repository contains files for running [Pathfinder](https://github.com/exodu
 6. You're live!
 
 ## Importing static database
-1. `wget https://github.com/exodus4d/pathfinder/raw/master/export/sql/eve_universe.sql.zip`
+1. `wget https://github.com/Clenda/pathfinder/raw/master/export/sql/eve_universe.sql.zip` (Fixed dump with gates to Povchen systems removed)
 2. `unzip eve_universe.sql.zip`
 3. development
 ```
