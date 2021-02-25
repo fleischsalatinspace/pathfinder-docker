@@ -62,19 +62,21 @@ This repository contains files for running [Pathfinder](https://github.com/exodu
 1. Clone this repo and change directory
 2. Copy the example `.env.sample` file to `.env.prod`
 3. Copy the example `config/Caddyfile.sample` file to `config/Caddyfile-prod`
-4. Edit `.env.prod` and `config/Caddyfile-prod` and check your config with `./production.sh config`
-5. If satisfied, start up your instance with `./production.sh up -d` 
-6. If youre getting the pathfinder setup page with letsencrypt staging TLS-certificate , everything is working
-7. Stop the cluster with `./production.sh stop` and comment `acme_ca` in `config/Caddyfile-prod` to receive live letsencrypt TLS-certificate
-8. Start  cluster with `./production.sh up -d`
+4. Edit `config/composer.json` add your own github-oauth key
+5. Edit `.env.prod` and `config/Caddyfile-prod` and check your config with `./production.sh config`
+6. If satisfied, start up your instance with `./production.sh up -d` 
+7. If youre getting the pathfinder setup page with letsencrypt staging TLS-certificate , everything is working
+8. Stop the cluster with `./production.sh stop` and comment `acme_ca` in `config/Caddyfile-prod` to receive live letsencrypt TLS-certificate
+9. Start  cluster with `./production.sh up -d`
 
 ## Development
 1. Clone this repo and change directory
 2. Copy the example `.env.sample` file to `.env.dev`
 3. Copy the example `config/Caddyfile.sample` file to `config/Caddyfile-dev`
-4. Edit `.env.dev` and `config/Caddyfile-dev` and check your config with `./develop.sh config`
-5. Start your instance with `./develop.sh up -d`
-6. Access your instance on `https://pathfinder.lan`
+4. Edit `config/composer.json` add your own github-oauth key
+5. Edit `.env.dev` and `config/Caddyfile-dev` and check your config with `./develop.sh config`
+6. Start your instance with `./develop.sh up -d`
+7. Access your instance on `https://pathfinder.lan`
 
 # Setup Pathfinder
 1. Navigate to your Pathfinder page, go through setup.
