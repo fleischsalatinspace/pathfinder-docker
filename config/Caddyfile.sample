@@ -9,7 +9,13 @@
     admin off
 }
 pathfinder.lan {
-    reverse_proxy pathfinder:80
+    @whitelisted {
+      path / /public* /map* /api* /favicon* /sso*
+    }
+    route {
+        reverse_proxy @whitelisted pathfinder:80
+        respond 403
+    }
     tls internal
     log {
     	output file /var/log/access.log
