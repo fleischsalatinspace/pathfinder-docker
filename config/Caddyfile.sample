@@ -10,7 +10,7 @@
 }
 pathfinder.lan {
     @whitelisted {
-      path / /public* /map* /api* /favicon* /sso*
+      path / /public* /map* /api* /favicon* /sso* /setup*
     }
     route {
         reverse_proxy @whitelisted pathfinder:80
