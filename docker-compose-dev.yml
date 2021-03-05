@@ -18,7 +18,7 @@ services:
       extends:
         file: docker-compose-base.yml
         service: pathfinder
-      env_file: .env.dev
+      env_file: "${ENV_FILE}"
       depends_on:
         - db
       volumes:
@@ -57,3 +57,4 @@ volumes:
     app-logs-redis-dev: {}
     app-logs-cron-dev: {}
     caddy-logs-dev: {}
+    #

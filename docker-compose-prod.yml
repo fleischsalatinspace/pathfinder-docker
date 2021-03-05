@@ -18,7 +18,7 @@ services:
       extends:
         file: docker-compose-base.yml
         service: pathfinder
-      env_file: .env.prod
+      env_file: "${ENV_FILE}"
       depends_on:
         - db
       volumes:
