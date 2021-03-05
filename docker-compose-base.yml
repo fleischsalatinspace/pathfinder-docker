@@ -8,10 +8,16 @@ services:
         volumes:
             - ./config/start.sql:/docker-entrypoint-initdb.d/start.sql
         restart: always
+        networks:
+          - default
 
     pathfinder:
         image: kryptedgaming/pathfinder:latest
+        networks:
+          - default
 
 
     caddy:
         image: caddy:2-alpine
+        networks:
+          - default
